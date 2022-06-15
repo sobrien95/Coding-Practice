@@ -4,7 +4,6 @@ public class VendingMachineTest {
         VendingMachine vender = new VendingMachine();
         boolean cont = true;
 
-        vender.display();
-        vender.readInput();
+        vender.mainMenu();
     }
 }
