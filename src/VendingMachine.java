@@ -38,7 +38,7 @@ public class VendingMachine {
         return change;
     }
 
-    //method to create a formatted display of the products in the vending machine, 3 per line
+    //method to display a list of all the products in the vending machine.
     public void display()
     {
         ListIterator<VendingMachineProduct> it = products.listIterator();
@@ -47,8 +47,13 @@ public class VendingMachine {
         {
             VendingMachineProduct p = it.next();
             int index = products.indexOf(p);
-            if(index)
+            System.out.printf("| %d - %s - €%.2f\n", index, p.getName(), p.getPrice());
         }
         System.out.println("|----------------------------------------------|");
     }
+
+    //method to read and validate user's input
+    public void readInput()
+    {}
+
 }
