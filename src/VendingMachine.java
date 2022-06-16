@@ -1,3 +1,4 @@
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Scanner;
@@ -25,22 +26,47 @@ public class VendingMachine {
     }
 
     //method to return an ArrayList of all the coins in the change bin
-    public ArrayList<Double> returnChange(double price)
+    public void returnChange(double price)
     {
-        //empty change bin
-        change.clear();
-
         //dispense largest coin that is smaller than remaining sum until 0 remains
-        for(int i = COINS.length-1; i >= 0; i-- )
+        for(int i = COINS.length-1; i >= 0; i--)
         {
-            while(COINS[i] < credit)
+            //using epsilon to compare if double values are equal, rather than a comparison operator
+            double epsilon = .000001d;
+            //if remainder is less than epsilon values
+            boolean isEqual = Math.abs(COINS[i] - credit) < epsilon;
+
+            //continue dispensing a coin denomination until credit is less than coin value
+            while(COINS[i] < credit || isEqual)
             {
-                credit -= COINS[i];
                 change.add(COINS[i]);
+                credit -= COINS[i];
+                isEqual = Math.abs(COINS[i] - credit) < epsilon;
             }
         }
-        
-        return change;
+
+        System.out.print("Calculating change: ");
+        ListIterator it = change.listIterator();
+        if(!it.hasNext())
+        {
+            System.out.print("€0.00");
+        }
+        else
+        {
+            while(it.hasNext())
+            {
+                System.out.printf("€%.2f", it.next());
+                //only punctuate output if there's another coin to dispense
+                if(it.hasNext())
+                {
+                    System.out.print(", ");
+                }
+            }
+        }
+        //floating point issues mean change has to be reset to 0 to prevent a negative sign
+        credit = 0;
+        //empty change bin
+        change.clear();
     }
 
     //method to display a list of all the products in the vending machine.
@@ -69,6 +95,7 @@ public class VendingMachine {
         while(!isValid)
         {
             this.display();
+            System.out.println(change.size());
             System.out.print("Enter 1 to submit credit or 2 to select a product: ");
             String s = readInput();
 
@@ -112,7 +139,7 @@ public class VendingMachine {
 
             try
             {
-                credit += Integer.parseInt(in);
+                credit += Double.parseDouble(in);
                 isValid = true;
             }
             catch(Exception e)
@@ -126,8 +153,44 @@ public class VendingMachine {
     //method to allow the user to select a product from the list using its index
     public void selectProduct()
     {
-        int selection;
+        int selection = 0;
+        boolean isValid = false;
 
+        while(!isValid)
+        {
+            System.out.print("Enter the number of the product you wish to buy: ");
+            try
+            {
+                selection = (Integer.parseInt(readInput()) - 1);
+                if(selection < 0 || selection >= products.size())
+                {
+                    throw new Exception("Error, selection out of bounds.");
+                }
+                isValid = true;
+            }
+            catch(Exception e)
+            {
+                System.out.println("Error, invalid input.");
+            }
+        }
+
+        //validate enough credit
+        VendingMachineProduct p = products.get(selection);
+        System.out.printf("Selection: %d - %s - €%.2f\n", selection+1, p.getName(), p.getPrice());
+        if(credit >= p.getPrice())
+        {
+            //dispense product
+            System.out.printf("Dispensing %s.\n", p.getName());
+            credit -= p.getPrice();
+            //dispense change
+            returnChange(p.getPrice());
+        }
+        else
+        {
+            System.out.println("Error, not enough credit.");
+        }
+        mainMenu();
+        //main menu
     }
 
     //method to read user's input and close program if it is "X", otherwise returns the input String
